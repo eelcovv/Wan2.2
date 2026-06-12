@@ -17,7 +17,7 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         python = pkgs.python312;
-        cudaPackages = pkgs.cudaPackages_12_4;
+        cudaPackages = pkgs.cudaPackages_12_8;
         wan22Shell = pkgs.mkShell {
           buildInputs = with pkgs; [
             python
@@ -65,7 +65,7 @@
             fi
             source .venv/bin/activate
 
-            echo "🎉 NixOS DevShell active with CUDA 12.4"
+            echo "🎉 NixOS DevShell active with CUDA 12.8"
             echo "Python: $(python --version)"
             echo "CUDA: $CUDA_PATH"
           '';
