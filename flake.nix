@@ -15,27 +15,15 @@
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
         python = pkgs.python312;
-        cudaPackages = pkgs.cudaPackages_12_8;
         wan22Shell = pkgs.mkShell {
           buildInputs = with pkgs; [
             python
             uv
-
-            # CUDA & cuDNN
-            cudaPackages.cudatoolkit
-            cudaPackages.cudnn
-            cudaPackages.nccl
-
-            # GPU libraries
-            libcublas
-
-            # Build tools
-            gcc
-            pkg-config
-            cmake
-            ninja
 
             # System libraries
             zlib
@@ -47,17 +35,10 @@
           ];
 
           shellHook = ''
-            export CUDA_PATH=${cudaPackages.cudatoolkit}
-            export CUDA_HOME=${cudaPackages.cudatoolkit}
-            export CUDNN_PATH=${cudaPackages.cudnn}
-            export LD_LIBRARY_PATH=${
-              pkgs.lib.makeLibraryPath [
-                cudaPackages.cudatoolkit
-                cudaPackages.cudnn
-                cudaPackages.nccl
-                pkgs.libcublas
-              ]
-            }:$LD_LIBRARY_PATH
+            prepend() { export LD_LIBRARY_PATH="$1''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"; }
+
+            [ -d /run/opengl-driver/lib ] && prepend /run/opengl-driver/lib
+            [ -d /run/opengl-driver-32/lib ] && prepend /run/opengl-driver-32/lib
 
             # Create/activate Python venv if needed
             if [ ! -d .venv ]; then
@@ -65,9 +46,9 @@
             fi
             source .venv/bin/activate
 
-            echo "🎉 NixOS DevShell active with CUDA 12.8"
+            echo "🎉 NixOS DevShell active (lightweight)"
             echo "Python: $(python --version)"
-            echo "CUDA: $CUDA_PATH"
+            echo "CUDA toolkit is not loaded by default; use your system CUDA or a separate CUDA shell if needed"
           '';
         };
       in
