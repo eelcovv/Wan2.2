@@ -5,3 +5,5 @@ from .speech2video import WanS2V
 from .text2video import WanT2V
 from .textimage2video import WanTI2V
 from .animate import WanAnimate
+
+__version__ = "2.2.0"
