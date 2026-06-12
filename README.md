@@ -102,6 +102,38 @@ pip install -r requirements.txt
 pip install -r requirements_s2v.txt
 ```
 
+For NixOS users, this repository also includes a lightweight flake-based development shell that can be loaded with `direnv`.
+It prepares Python, `uv`, and runtime library paths for the NVIDIA driver without forcing Nix to build the full CUDA toolkit during shell startup.
+
+NixOS setup:
+```sh
+# allow direnv once
+direnv allow
+
+# create the project virtual environment
+uv venv --python 3.12
+
+# install CUDA-enabled PyTorch wheels
+uv pip install --python .venv/bin/python --index-url https://download.pytorch.org/whl/cu128 torch torchvision torchaudio
+
+# install the main runtime dependencies, but skip flash-attn if local compilation is too heavy
+grep -v '^flash_attn$' requirements.txt | uv pip install --python .venv/bin/python -r /dev/stdin
+
+# optional: install Speech-to-Video dependencies
+uv pip install --python .venv/bin/python -r requirements_s2v.txt
+```
+
+Verify that PyTorch can see the GPU:
+```sh
+.venv/bin/python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0) if torch.cuda.is_available() else None)"
+```
+
+Notes:
+- This setup is reproducible on another NixOS machine as long as the host provides a working NVIDIA driver stack.
+- The flake shell prepares the environment, but CUDA-enabled PyTorch still comes from PyTorch wheels installed into `.venv`.
+- `flash_attn` is optional and may require substantial RAM and disk space to compile locally.
+- The 14B inference targets in this repository remain very demanding. Small GPUs such as 8GB RTX 4060-class cards can load the software stack and may run limited offload-based experiments, but full 14B generation is generally not practical on such hardware.
+
 
 #### Model Download
 
@@ -226,6 +258,11 @@ This repository supports the `Wan2.2-TI2V-5B` Text-Image-to-Video model and can 
 - Single-GPU Text-to-Video inference
 ```sh
 python generate.py --task ti2v-5B --size 1280*704 --ckpt_dir ./Wan2.2-TI2V-5B --offload_model True --convert_model_dtype --t5_cpu --prompt "Two anthropomorphic cats in comfy boxing gear and bright gloves fight intensely on a spotlighted stage"
+```
+
+If your TI2V-5B checkpoints are stored outside the repository, you can also point `--ckpt_dir` to an absolute path:
+```sh
+python generate.py --task ti2v-5B --size "1280*704" --ckpt_dir /run/media/eelco/T7/Wan-Animate/wan22-ti2v-5b --offload_model True --convert_model_dtype --t5_cpu --prompt "Two anthropomorphic cats in comfy boxing gear and bright gloves fight intensely on a spotlighted stage."
 ```
 
 > 💡Unlike other tasks, the 720P resolution of the Text-Image-to-Video task is `1280*704` or `704*1280`.
