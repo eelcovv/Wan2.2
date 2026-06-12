@@ -75,29 +75,10 @@ If your research or project builds upon [**Wan2.1**](https://github.com/Wan-Vide
     - [x] Diffusers integration
 - Wan2.2-S2V Speech-to-Video
     - [x] Inference code of Wan2.2-S2V
-
-#### DiffSynth-Studio 16GB VRAM Checklist
-
-If native Wan2.2 inference in this repository runs out of memory, you can validate a 16GB GPU workflow with [DiffSynth-Studio](https://github.com/modelscope/DiffSynth-Studio):
-
-```sh
-cd /path/to/DiffSynth-Studio
-source .venv/bin/activate
-
-# 1) Runtime checks
-python -c "import torch; print('cuda:', torch.cuda.is_available(), '| gpu:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else None, '| vram_gb:', round(torch.cuda.get_device_properties(0).total_memory/1024**3, 2) if torch.cuda.is_available() else None)"
-python -c "import diffsynth; print('diffsynth ok')"
-
-# 2) First low-VRAM test (recommended baseline)
-python examples/wanvideo/model_inference_low_vram/Wan2.1-T2V-1.3B.py
-
-# 3) Wan2.2 test on the same machine (more demanding)
-python examples/wanvideo/model_inference_low_vram/Wan2.2-TI2V-5B.py
-```
-
-Interpretation:
-- If step (2) succeeds and step (3) fails with OOM, the machine is suitable for Wan2.1 1.3B but still too limited for Wan2.2 TI2V-5B in that configuration.
-- If both steps succeed, Wan2.2 TI2V-5B is usable on your 16GB setup with DiffSynth-Studio VRAM management.
+    - [x] Checkpoints of Wan2.2-S2V-14B
+    - [x] ComfyUI integration
+    - [x] Diffusers integration
+- Wan2.2-Animate Character Animation and Replacement
     - [x] Inference code of Wan2.2-Animate
     - [x] Checkpoints of Wan2.2-Animate
     - [x] ComfyUI integration
@@ -152,6 +133,29 @@ Notes:
 - The flake shell prepares the environment, but CUDA-enabled PyTorch still comes from PyTorch wheels installed into `.venv`.
 - `flash_attn` is optional and may require substantial RAM and disk space to compile locally.
 - The 14B inference targets in this repository remain very demanding. Small GPUs such as 8GB RTX 4060-class cards can load the software stack and may run limited offload-based experiments, but full 14B generation is generally not practical on such hardware.
+
+#### DiffSynth-Studio 16GB VRAM Checklist
+
+If native Wan2.2 inference in this repository runs out of memory, you can validate a 16GB GPU workflow with [DiffSynth-Studio](https://github.com/modelscope/DiffSynth-Studio):
+
+```sh
+cd /path/to/DiffSynth-Studio
+source .venv/bin/activate
+
+# 1) Runtime checks
+python -c "import torch; print('cuda:', torch.cuda.is_available(), '| gpu:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else None, '| vram_gb:', round(torch.cuda.get_device_properties(0).total_memory/1024**3, 2) if torch.cuda.is_available() else None)"
+python -c "import diffsynth; print('diffsynth ok')"
+
+# 2) First low-VRAM test (recommended baseline)
+python examples/wanvideo/model_inference_low_vram/Wan2.1-T2V-1.3B.py
+
+# 3) Wan2.2 test on the same machine (more demanding)
+python examples/wanvideo/model_inference_low_vram/Wan2.2-TI2V-5B.py
+```
+
+Interpretation:
+- If step (2) succeeds and step (3) fails with OOM, the machine is suitable for Wan2.1 1.3B but still too limited for Wan2.2 TI2V-5B in that configuration.
+- If both steps succeed, Wan2.2 TI2V-5B is usable on your 16GB setup with DiffSynth-Studio VRAM management.
 
 
 #### Model Download
