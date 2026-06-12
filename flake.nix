@@ -74,5 +74,6 @@
       {
         devShells.default = wan22Shell;
         devShells.wan22_build = wan22Shell;
+      }
     );
 }
